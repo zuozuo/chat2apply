@@ -31,7 +31,7 @@ class Bot(Chain):
     company_name: str
     """Company name for which this chatbot works for"""
 
-    bot_name: str = 'Mia'
+    bot_name: str = 'GeniusBot'
     """Name of the bot"""
 
     functions: Functions = Functions()
@@ -42,7 +42,7 @@ class Bot(Chain):
     prompt: ChatPromptTemplate = SystemMessagePromptTemplate(
         prompt=PromptTemplate(
             template=SYSTEM_PROMPT,
-            input_variables=["company_name", "history", "input"],
+            input_variables=["bot_name", "company_name", "history", "input"],
         )
     )
     """Prompt object to use."""
@@ -80,15 +80,14 @@ class Bot(Chain):
     def run(
         self,
         message,
-        company_name=None,
         callbacks: Callbacks = None,
         tags: Optional[List[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None,
         **kwargs: Any,
     ) -> str:
-        kwargs['company_name'] = company_name or self.company_name
         kwargs['input'] = message
-        return self(kwargs, callbacks=callbacks, tags=tags, metadata=metadata)
+        kwargs['bot_name'] = self.bot_name
+        kwargs['company_name'] = self.company_name
+        return self(kwargs, callbacks=callbacks, tags=tags)
 
     def run_interactively(self):
         self.console.print_welcome_message()

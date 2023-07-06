@@ -10,7 +10,7 @@ then run code below:
 
 ```python
 from chat2apply.bot import Bot
-bot = Bot(company_name='KFC')
+bot = Bot(company_name='KFC', bot_name='GeniusBot')
 bot.run_interactively()
 ```
 
