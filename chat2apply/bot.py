@@ -97,8 +97,10 @@ class Bot(Chain):
         response = self.llm.predict_messages(
             [self.prompt.format(**inputs)],
             callbacks=callbacks,
-            functions=self.functions.function_specs
+            functions=self.functions.function_specs,
         )
+        # function_call={"name": "recommend_jobs"}
+        import ipdb; ipdb.set_trace(context=5)
 
         # If you want to log something about this run, you can do so by calling
         # methods on the `run_manager`, as shown below. This will trigger any
