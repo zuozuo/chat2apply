@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+[project]
+name = "chat2apply"
+version = "0.0.1"
+authors = [
+  { name="zuozuo", email="zzhattzzh@126.com" },
+]
+description = "An AI chatbot to help user find and apply jobs"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+  "langchain>=0.0.222",
+  "requests>=2.31.0",
+  "openai>=0.27.8",
+  "termcolor>=2.3.0",
+  "tiktoken>=0.4.0",
+  "tenacity>=8.2.2",
+  "scipy>=1.11.0",
+  "rich>=13.4.2",
+  "google-search-results>=2.4.2",
+  "pytest>=7.4.0",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/zuozuo/chat2apply"
+"Bug Tracker" = "https://github.com/zuozuo/chat2apply/issues"
