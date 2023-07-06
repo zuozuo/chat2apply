@@ -48,7 +48,7 @@ class Bot(Chain):
     """Prompt object to use."""
 
     # console: BotConsole = BotConsole()
-    llm: BaseLanguageModel = ChatOpenAI(temperature=0.9, model='gpt-4')
+    llm: BaseLanguageModel = ChatOpenAI(temperature=1, model='gpt-4')
     output_key: str = "text"  #: :meta private:
 
     @property
@@ -91,6 +91,8 @@ class Bot(Chain):
 
     def run_interactively(self):
         self.console.print_welcome_message()
+        self.memory.chat_memory.add_user_message('Do you want to find a job?')
+        self.console.ai_print('Do you want to find a job?')
         # messages.append({"role": "user", "content": 'Do you want to find a job?'})
         while True:
             try:
@@ -129,7 +131,6 @@ class Bot(Chain):
             callbacks=callbacks,
             functions=self.functions.function_specs,
         )
-        print(response)
         # function_call={"name": "recommend_jobs"}
 
         # If you want to log something about this run, you can do so by calling
@@ -138,7 +139,10 @@ class Bot(Chain):
         if run_manager:
             run_manager.on_text("Log something about this run")
 
-        return {self.output_key: response.content}
+        return {
+            self.output_key: response.content,
+            'function_calling': response.additional_kwargs
+        }
 
     async def _acall(
         self,
