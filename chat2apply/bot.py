@@ -14,12 +14,11 @@ from langchain.prompts.base import BasePromptTemplate
 from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate
-from langchain.schema import HumanMessage, SystemMessage, AIMessage
+from langchain.schema import BaseMessage, HumanMessage, SystemMessage, AIMessage
 
 from .user import User
 from .prompts import SYSTEM_PROMPT
 from .functions import Functions
-from .chat_memory import ChatMemory
 from .console import BotConsole
 
 class Bot(Chain):
@@ -37,12 +36,12 @@ class Bot(Chain):
     functions: Functions = Functions()
     """Functions"""
 
-    memory: ChatMemory = ChatMemory()
+    messages: list[BaseMessage] = []
 
     prompt: ChatPromptTemplate = SystemMessagePromptTemplate(
         prompt=PromptTemplate(
-            template=SYSTEM_PROMPT,
-            input_variables=["bot_name", "company_name", "history", "input"],
+            template="You are a chatbot",
+            input_variables=[],
         )
     )
     """Prompt object to use."""
@@ -77,6 +76,14 @@ class Bot(Chain):
         """
         return [self.output_key]
 
+    @property
+    def system_message(self):
+        content = SYSTEM_PROMPT.format(
+            bot_name=self.bot_name,
+            company_name=self.company_name,
+        )
+        return SystemMessage(content=content)
+
     def run(
         self,
         message,
@@ -84,16 +91,17 @@ class Bot(Chain):
         tags: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> str:
-        kwargs['input'] = message
-        kwargs['bot_name'] = self.bot_name
-        kwargs['company_name'] = self.company_name
+        self.messages.append(HumanMessage(content=message))
+        # kwargs['input'] = message
+        # kwargs['bot_name'] = self.bot_name
+        # kwargs['company_name'] = self.company_name
         return self(kwargs, callbacks=callbacks, tags=tags)
 
     def run_interactively(self):
         self.console.print_welcome_message()
-        self.memory.chat_memory.add_user_message('Do you want to find a job?')
-        self.console.ai_print('Do you want to find a job?')
-        # messages.append({"role": "user", "content": 'Do you want to find a job?'})
+        first_question = 'Do you want to find a job?'
+        self.console.ai_print(first_question)
+        self.messages.append(AIMessage(content=first_question))
         while True:
             try:
                 user_input = self.console.get_user_input()
@@ -103,10 +111,10 @@ class Bot(Chain):
                 if user_input == 'show_messages':
                     print_json('show_messages')
                     continue
-
                 response = self.run(user_input)
                 print(response)
                 self.console.ai_print(response['text'])
+                self.messages.append(AIMessage(content=response['text']))
                 # function_call = assistant_message.get('function_call', None)
                 # if function_call:
                 #     handle_function_call(function_call)
@@ -126,8 +134,9 @@ class Bot(Chain):
         # You can always obtain a callback manager for this by calling
         # `run_manager.get_child()` as shown below.
         callbacks = run_manager.get_child() if run_manager else None
+        messages = [self.system_message] + self.messages
         response = self.llm.predict_messages(
-            [self.prompt.format(**inputs)],
+            messages,
             callbacks=callbacks,
             functions=self.functions.function_specs,
         )
