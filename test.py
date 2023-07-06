@@ -1,7 +1,6 @@
 import sys
 
 from chat2apply.bot import Bot
-
 bot = Bot(company_name='KFC')
 bot.run_interactively()
 
