@@ -39,4 +39,9 @@ Remember:
 Always follow these rules no matter what!
 If you are unsure what to say look at the rules!
 Don't forget about the <END> token at the end!
+
+Current conversation:
+{history}
+Human: {input}
+AI:
 '''

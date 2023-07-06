@@ -12,7 +12,6 @@ from langchain.callbacks.manager import (
 from langchain.chains.base import Chain
 from langchain.prompts.base import BasePromptTemplate
 from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate
 from langchain.schema import HumanMessage, SystemMessage, AIMessage
@@ -20,26 +19,29 @@ from langchain.schema import HumanMessage, SystemMessage, AIMessage
 from .user import User
 from .prompts import SYSTEM_PROMPT
 from .functions import Functions
+from .chat_memory import ChatMemory
 
 class Bot(Chain):
     """A custom chain, which serves as a chatbot to help user find and apply for jobs"""
 
-    """current user to chat with the bot"""
     user: User = User()
+    """current user to chat with the bot"""
 
-    """Company name for which this chatbot works for"""
     company_name: str
+    """Company name for which this chatbot works for"""
 
-    """Functions"""
     functions: Functions = Functions()
+    """Functions"""
 
-    """Prompt object to use."""
+    memory: ChatMemory = ChatMemory()
+
     prompt: ChatPromptTemplate = SystemMessagePromptTemplate(
         prompt=PromptTemplate(
             template=SYSTEM_PROMPT,
-            input_variables=["company_name"],
+            input_variables=["company_name", "history", "input"],
         )
     )
+    """Prompt object to use."""
 
     llm: BaseLanguageModel = ChatOpenAI(temperature=0.9)
     output_key: str = "text"  #: :meta private:
@@ -76,22 +78,16 @@ class Bot(Chain):
         **kwargs: Any,
     ) -> str:
         kwargs['company_name'] = company_name or self.company_name
-        kwargs['message'] = message
+        kwargs['input'] = message
         _output_key = self._run_output_key
-        return self(kwargs, callbacks=callbacks, tags=tags, metadata=metadata)[
-            _output_key
-        ]
+        response = self(kwargs, callbacks=callbacks, tags=tags, metadata=metadata)
+        return response[_output_key]
 
     def _call(
         self,
         inputs: Dict[str, Any],
         run_manager: Optional[CallbackManagerForChainRun] = None,
     ) -> Dict[str, str]:
-        message = inputs.pop('message', '')
-        messages = [
-            self.prompt.format(**inputs),
-            HumanMessage(content=message),
-        ]
         # Whenever you call a language model, or another chain, you should pass
         # a callback manager to it. This allows the inner run to be tracked by
         # any callbacks that are registered on the outer run.
@@ -99,7 +95,7 @@ class Bot(Chain):
         # `run_manager.get_child()` as shown below.
         callbacks = run_manager.get_child() if run_manager else None
         response = self.llm.predict_messages(
-            messages,
+            [self.prompt.format(**inputs)],
             callbacks=callbacks,
             functions=self.functions.function_specs
         )
