@@ -20,6 +20,7 @@ from .user import User
 from .prompts import SYSTEM_PROMPT
 from .functions import Functions
 from .chat_memory import ChatMemory
+from .console import BotConsole
 
 class Bot(Chain):
     """A custom chain, which serves as a chatbot to help user find and apply for jobs"""
@@ -29,6 +30,9 @@ class Bot(Chain):
 
     company_name: str
     """Company name for which this chatbot works for"""
+
+    bot_name: str = 'Mia'
+    """Name of the bot"""
 
     functions: Functions = Functions()
     """Functions"""
@@ -43,8 +47,13 @@ class Bot(Chain):
     )
     """Prompt object to use."""
 
-    llm: BaseLanguageModel = ChatOpenAI(temperature=0.9)
+    # console: BotConsole = BotConsole()
+    llm: BaseLanguageModel = ChatOpenAI(temperature=0.9, model='gpt-4')
     output_key: str = "text"  #: :meta private:
+
+    @property
+    def console(self):
+        return BotConsole(name=self.bot_name)
 
     class Config:
         """Configuration for this pydantic object."""
@@ -79,9 +88,31 @@ class Bot(Chain):
     ) -> str:
         kwargs['company_name'] = company_name or self.company_name
         kwargs['input'] = message
-        _output_key = self._run_output_key
-        response = self(kwargs, callbacks=callbacks, tags=tags, metadata=metadata)
-        return response[_output_key]
+        return self(kwargs, callbacks=callbacks, tags=tags, metadata=metadata)
+
+    def run_interactively(self):
+        self.console.print_welcome_message()
+        # messages.append({"role": "user", "content": 'Do you want to find a job?'})
+        while True:
+            try:
+                user_input = self.console.get_user_input()
+
+                if user_input in ['quit', '\q', 'q']:
+                    break
+                if user_input == 'show_messages':
+                    print_json('show_messages')
+                    continue
+
+                response = self.run(user_input)
+                print(response)
+                self.console.ai_print(response['text'])
+                # function_call = assistant_message.get('function_call', None)
+                # if function_call:
+                #     handle_function_call(function_call)
+                # else:
+                #     mia_print(assistant_message['content'])
+            except KeyboardInterrupt:
+                break
 
     def _call(
         self,
@@ -99,8 +130,8 @@ class Bot(Chain):
             callbacks=callbacks,
             functions=self.functions.function_specs,
         )
+        print(response)
         # function_call={"name": "recommend_jobs"}
-        import ipdb; ipdb.set_trace(context=5)
 
         # If you want to log something about this run, you can do so by calling
         # methods on the `run_manager`, as shown below. This will trigger any
