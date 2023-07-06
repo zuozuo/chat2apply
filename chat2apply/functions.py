@@ -48,19 +48,17 @@ class Functions:
         },
     ]
 
-    def __init__(self, model):
-        self.model = model
-
     def functions(self):
-        return {
+        functions = {
             'apply_job': self.apply_job,
             'recommend_jobs': self.recommend_jobs,
         }
+        return functions
 
     def get_function_by_name(name):
         for func in self.functions():
             if func['name'] == name:
-            return func
+                return func
         return None
 
     def apply_job(phone=None, email=None, job_index=0):
