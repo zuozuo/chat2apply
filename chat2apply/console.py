@@ -13,6 +13,10 @@ class BotConsole():
         self.console.print(f"[b]{self.name}[/b]: ", end="", style=AI_TEXT_COLOR)
         self.console.print(f"\n   {text}")
 
+    def user_print(self, text):
+        self.console.print(f"[b]You[/b]: ", end="", style=AI_TEXT_COLOR)
+        self.console.print(f"\n   {text}")
+
     def get_user_input(self):
         return self.console.input("[b]You:[/b]\n   ").strip()
 

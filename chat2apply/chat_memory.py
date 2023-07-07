@@ -3,6 +3,9 @@ from typing import Any, Dict, Tuple
 from langchain.memory import ConversationBufferMemory
 
 class ChatMemory(ConversationBufferMemory):
+    human_prefix: str = "assistant"
+    ai_prefix: str = "user"
+
     input_key: str = 'input'
     output_key: str = 'text'
 
