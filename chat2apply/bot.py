@@ -23,6 +23,7 @@ from .user import User
 from .prompts import SYSTEM_PROMPT
 from .console import BotConsole
 from .functions import parse_function_call, function_specs, find_invalid_argument
+from .chat_memory import ChatMemory
 from . import functions
 
 class Bot(Chain):
@@ -37,7 +38,7 @@ class Bot(Chain):
     bot_name: str = 'GeniusBot'
     """Name of the bot"""
 
-    messages: list[BaseMessage] = []
+    history: ChatMemory = ChatMemory()
 
     prompt: ChatPromptTemplate = SystemMessagePromptTemplate(
         prompt=PromptTemplate(
@@ -92,14 +93,14 @@ class Bot(Chain):
         tags: Optional[List[str]] = None,
         **kwargs: Any,
     ) -> str:
-        self.messages.append(HumanMessage(content=message))
+        self.history.add_user_message(message)
         return self(kwargs, callbacks=callbacks, tags=tags)
 
     def run_interactively(self):
         self.console.print_welcome_message()
         first_question = 'Do you want to find a job?'
         self.console.ai_print(first_question)
-        self.messages.append(AIMessage(content=first_question))
+        self.history.add_ai_message(first_question)
         while True:
             try:
                 user_input = self.console.get_user_input()
@@ -115,8 +116,7 @@ class Bot(Chain):
                 if function_call:
                     self.handle_function_call(function_call)
                 else:
-                    self.console.ai_print(response['text'])
-                    self.messages.append(AIMessage(content=response['text']))
+                    self.print_and_save(response['text'])
             except KeyboardInterrupt:
                 break
 
@@ -137,7 +137,7 @@ class Bot(Chain):
 
     def print_and_save(self, msg):
         self.console.ai_print(msg)
-        self.messages.append(AIMessage(content=msg))
+        self.history.add_ai_message(msg)
 
     def validate_arguments(self, name, args):
         invalid_args = find_invalid_argument(name, args)
@@ -167,7 +167,7 @@ class Bot(Chain):
         # You can always obtain a callback manager for this by calling
         # `run_manager.get_child()` as shown below.
         callbacks = run_manager.get_child() if run_manager else None
-        messages = [self.system_message] + self.messages
+        messages = [self.system_message] + self.history.messages
         response = self.llm.predict_messages(
             messages,
             callbacks=callbacks,

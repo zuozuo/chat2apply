@@ -1,15 +1,24 @@
-from typing import Any, Dict, Tuple
+from pydantic import BaseModel
 
-from langchain.memory import ConversationBufferMemory
+from langchain.schema import BaseMessage, HumanMessage, SystemMessage, AIMessage
 
-class ChatMemory(ConversationBufferMemory):
-    human_prefix: str = "assistant"
-    ai_prefix: str = "user"
+# if you want to save the chat history to database, just subclass this class
+class ChatMemory(BaseModel):
 
-    input_key: str = 'input'
-    output_key: str = 'text'
+    messages: list[BaseMessage] = []
 
-    def _get_input_output(
-        self, inputs: Dict[str, Any], outputs: Dict[str, str]
-    ) -> Tuple[str, str]:
-        return inputs[self.input_key], outputs[self.output_key]
+    def add_user_message(self, message):
+        self.messages.append(HumanMessage(content=message))
+
+    def add_ai_message(self, message):
+        self.messages.append(AIMessage(content=message))
+
+    def add_system_message(self, message):
+        self.messages.append(SystemMessage(content=message))
+
+    def clear(self):
+        self.messages.clear()
+
+    def load_history_messages(self):
+        # subclass the ChatMemory class and implement this
+        raise NotImplementedError()
