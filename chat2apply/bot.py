@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import traceback
+
 from typing import Any, Dict, List, Optional
+from inspect import ismethod
 
 from pydantic import Extra
 
@@ -18,8 +21,9 @@ from langchain.schema import BaseMessage, HumanMessage, SystemMessage, AIMessage
 
 from .user import User
 from .prompts import SYSTEM_PROMPT
-from .functions import Functions
 from .console import BotConsole
+from .functions import parse_function_call, function_specs, find_invalid_argument
+from . import functions
 
 class Bot(Chain):
     """A custom chain, which serves as a chatbot to help user find and apply for jobs"""
@@ -32,9 +36,6 @@ class Bot(Chain):
 
     bot_name: str = 'GeniusBot'
     """Name of the bot"""
-
-    functions: Functions = Functions()
-    """Functions"""
 
     messages: list[BaseMessage] = []
 
@@ -92,9 +93,6 @@ class Bot(Chain):
         **kwargs: Any,
     ) -> str:
         self.messages.append(HumanMessage(content=message))
-        # kwargs['input'] = message
-        # kwargs['bot_name'] = self.bot_name
-        # kwargs['company_name'] = self.company_name
         return self(kwargs, callbacks=callbacks, tags=tags)
 
     def run_interactively(self):
@@ -113,15 +111,50 @@ class Bot(Chain):
                     continue
                 response = self.run(user_input)
                 print(response)
-                self.console.ai_print(response['text'])
-                self.messages.append(AIMessage(content=response['text']))
-                # function_call = assistant_message.get('function_call', None)
-                # if function_call:
-                #     handle_function_call(function_call)
-                # else:
-                #     mia_print(assistant_message['content'])
+                function_call = response.get('function_call', None)
+                if function_call:
+                    self.handle_function_call(function_call)
+                else:
+                    self.console.ai_print(response['text'])
+                    self.messages.append(AIMessage(content=response['text']))
             except KeyboardInterrupt:
                 break
+
+    def handle_function_call(self, params):
+        try:
+            name, args = parse_function_call(params)
+            self.validate_arguments(name, args)
+
+            # TODO: update_job_preference(args)
+
+            # call function with arguments and return
+            result = getattr(functions, name)(args)
+            callback = getattr(self, f"{name}_callback")
+            if ismethod(callback):
+                callback(result)
+        except Exception as e:
+            traceback.print_exc()
+
+    def print_and_save(self, msg):
+        self.console.ai_print(msg)
+        self.messages.append(AIMessage(content=msg))
+
+    def validate_arguments(self, name, args):
+        invalid_args = find_invalid_argument(name, args)
+        if invalid_args:
+            args_desc = invalid_args['properties']['description']
+            msg = f"Great, to apply the job you need to provide: {args_desc}"
+            self.print_and_save(msg)
+            raise ValueError(f"invalid arguments: {name} {args}")
+
+    def search_jobs_callback(self, jobs):
+        # TODO: save jobs to current_jobs
+        # TODO: save current pagination
+        self.print_and_save(f"available jobs list: {jobs}")
+        self.print_and_save("Which job do you want to apply or you want to view more jobs?")
+
+    def apply_job_callback(self, job):
+        self.print_and_save('job appled successfully!')
 
     def _call(
         self,
@@ -138,9 +171,8 @@ class Bot(Chain):
         response = self.llm.predict_messages(
             messages,
             callbacks=callbacks,
-            functions=self.functions.function_specs,
+            functions=function_specs,
         )
-        # function_call={"name": "recommend_jobs"}
 
         # If you want to log something about this run, you can do so by calling
         # methods on the `run_manager`, as shown below. This will trigger any
@@ -150,7 +182,7 @@ class Bot(Chain):
 
         return {
             self.output_key: response.content,
-            'function_calling': response.additional_kwargs
+            **response.additional_kwargs
         }
 
     async def _acall(
