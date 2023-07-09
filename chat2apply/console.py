@@ -1,6 +1,7 @@
 from rich.console import Console
 
 AI_TEXT_COLOR = 'bright_magenta'
+from .prompts import WELCOME_MESSAGE
 
 class BotConsole():
     """console uitls for chatbot"""
@@ -21,6 +22,4 @@ class BotConsole():
         return self.console.input("[b]You:[/b]\n   ").strip()
 
     def print_welcome_message(self):
-        self.ai_print(
-            f"I am {self.name}, an AI assistant to help you find and apply jobs. And you can also ask me question about company benefits and working environment."
-        )
+        self.ai_print(WELCOME_MESSAGE.format(self.name))

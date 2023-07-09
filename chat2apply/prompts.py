@@ -40,9 +40,6 @@ If you are unsure what to say look at the rules!
 Don't forget about the <END> token at the end!
 '''
 
-# - The applicant can only apply for a single position! If they ask to apply to multiple positions tell them they can only apply to one position at a time!
-#
-# Current conversation:
-# {history}
-# Human: {input}
-# AI:
+WELCOME_MESSAGE = '''I am {name}, an AI assistant to help you find and apply jobs. \
+And you can also ask me question about company benefits and working environment.
+'''

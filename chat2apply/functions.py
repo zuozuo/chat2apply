@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 import os
 import json
 from serpapi import GoogleSearch
@@ -14,19 +16,19 @@ function_specs = [
                 "location": {
                     "type": "string",
                     "description": "The city and state where you want to work, ask the user to get the location information",
-                },
+                    },
                 "job_title": {
                     "type": "string",
                     "description": "The title of job, or the occupation, ask the user to get the job title",
-                },
+                    },
                 "is_full_time": {
                     "type": "boolean",
                     "description": "Is this job full-time or part-time",
+                    },
                 },
-            },
             "required": ["location", "job_title", "is_full_time"],
+            },
         },
-    },
     {
         "name": "apply_job",
         "description": "Help user to apply for a specific position",
@@ -55,7 +57,7 @@ def safe_parse_arguments(args_str):
     try:
         return json.loads(args_str)
     except Exception as e:
-        raise ValueError(f"invalid function_call arguments: {args_str}")
+        raise ValueError(f"invalid function_call arguments: {args_str}") from e
 
 def parse_function_call(params):
     name = params.get('name') or ''
@@ -73,17 +75,16 @@ def get_func_spec(name):
 
 def is_function_valid(name):
     spec = get_func_spec(name)
-    return True if spec else False
+    return bool(spec)
 
 def is_argument_valid(value, value_type):
     if value_type == 'string':
         return value != "" and value != 'any' and value is not None
-    elif value_type == 'integer':
+    if value_type == 'integer':
         return value > 0
-    elif value_type == 'boolean':
+    if value_type == 'boolean':
         return True
-    else:
-        return False
+    return False
 
 def find_invalid_argument(name, arguments):
     spec = get_func_spec(name)

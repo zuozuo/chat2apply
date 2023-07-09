@@ -11,13 +11,13 @@ from langchain.base_language import BaseLanguageModel
 from langchain.callbacks.manager import (
     AsyncCallbackManagerForChainRun,
     CallbackManagerForChainRun,
+    Callbacks,
 )
 from langchain.chains.base import Chain
-from langchain.prompts.base import BasePromptTemplate
 from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts.chat import ChatPromptTemplate, SystemMessagePromptTemplate
-from langchain.schema import BaseMessage, HumanMessage, SystemMessage, AIMessage
+from langchain.schema import SystemMessage
 
 from .user import User
 from .prompts import SYSTEM_PROMPT
@@ -86,6 +86,7 @@ class Bot(Chain):
         )
         return SystemMessage(content=content)
 
+    # pylint: disable=W0221
     def run(
         self,
         message,
@@ -105,10 +106,10 @@ class Bot(Chain):
             try:
                 user_input = self.console.get_user_input()
 
-                if user_input in ['quit', '\q', 'q']:
+                if user_input in ["quit", "q"]:
                     break
                 if user_input == 'show_messages':
-                    print_json('show_messages')
+                    print('show_messages')
                     continue
                 response = self.run(user_input)
                 print(response)
@@ -132,7 +133,8 @@ class Bot(Chain):
             callback = getattr(self, f"{name}_callback")
             if ismethod(callback):
                 callback(result)
-        except Exception as e:
+        # pylint: disable=broad-except
+        except Exception as _:
             traceback.print_exc()
 
     def print_and_save(self, msg):
@@ -154,6 +156,7 @@ class Bot(Chain):
         self.print_and_save("Which job do you want to apply or you want to view more jobs?")
 
     def apply_job_callback(self, job):
+        print(job)
         self.print_and_save('job appled successfully!')
 
     def _call(
