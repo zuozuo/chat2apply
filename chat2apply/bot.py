@@ -1,3 +1,5 @@
+# type: ignore
+
 from __future__ import annotations
 
 import traceback
@@ -13,6 +15,7 @@ from langchain.callbacks.manager import (
     CallbackManagerForChainRun,
     Callbacks,
 )
+
 from langchain.chains.base import Chain
 from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
@@ -26,6 +29,7 @@ from .functions import parse_function_call, function_specs, find_invalid_argumen
 from .chat_memory import ChatMemory
 from . import functions
 
+
 class Bot(Chain):
     """A custom chain, which serves as a chatbot to help user find and apply for jobs"""
 
@@ -35,7 +39,7 @@ class Bot(Chain):
     company_name: str
     """Company name for which this chatbot works for"""
 
-    bot_name: str = 'GeniusBot'
+    bot_name: str = "GeniusBot"
     """Name of the bot"""
 
     history: ChatMemory = ChatMemory()
@@ -49,7 +53,7 @@ class Bot(Chain):
     """Prompt object to use."""
 
     # console: BotConsole = BotConsole()
-    llm: BaseLanguageModel = ChatOpenAI(temperature=1, model='gpt-4')
+    llm: BaseLanguageModel = ChatOpenAI(temperature=1, model="gpt-4")
     output_key: str = "text"  #: :meta private:
 
     @property
@@ -99,7 +103,7 @@ class Bot(Chain):
 
     def run_interactively(self):
         self.console.print_welcome_message()
-        first_question = 'Do you want to find a job?'
+        first_question = "Do you want to find a job?"
         self.console.ai_print(first_question)
         self.history.add_ai_message(first_question)
         while True:
@@ -108,16 +112,16 @@ class Bot(Chain):
 
                 if user_input in ["quit", "q"]:
                     break
-                if user_input == 'show_messages':
-                    print('show_messages')
+                if user_input == "show_messages":
+                    print("show_messages")
                     continue
                 response = self.run(user_input)
                 print(response)
-                function_call = response.get('function_call', None)
+                function_call = response.get("function_call", None)
                 if function_call:
                     self.handle_function_call(function_call)
                 else:
-                    self.print_and_save(response['text'])
+                    self.print_and_save(response["text"])
             except KeyboardInterrupt:
                 break
 
@@ -144,7 +148,7 @@ class Bot(Chain):
     def validate_arguments(self, name, args):
         invalid_args = find_invalid_argument(name, args)
         if invalid_args:
-            args_desc = invalid_args['properties']['description']
+            args_desc = invalid_args["properties"]["description"]
             msg = f"Great, to apply the job you need to provide: {args_desc}"
             self.print_and_save(msg)
             raise ValueError(f"invalid arguments: {name} {args}")
@@ -153,11 +157,13 @@ class Bot(Chain):
         # TODO: save jobs to current_jobs
         # TODO: save current pagination
         self.print_and_save(f"available jobs list: {jobs}")
-        self.print_and_save("Which job do you want to apply or you want to view more jobs?")
+        self.print_and_save(
+            "Which job do you want to apply or you want to view more jobs?"
+        )
 
     def apply_job_callback(self, job):
         print(job)
-        self.print_and_save('job appled successfully!')
+        self.print_and_save("job appled successfully!")
 
     def _call(
         self,
@@ -183,10 +189,7 @@ class Bot(Chain):
         if run_manager:
             run_manager.on_text("Log something about this run")
 
-        return {
-            self.output_key: response.content,
-            **response.additional_kwargs
-        }
+        return {self.output_key: response.content, **response.additional_kwargs}
 
     async def _acall(
         self,

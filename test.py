@@ -1,8 +1,7 @@
 import sys
-
 from chat2apply.bot import Bot
 
-bot = Bot(company_name='company_name', bot_name='GeniusBot')
+bot = Bot(bot_name="GeniusBot", company_name="company_name")
 bot.run_interactively()
 
 # pylint: disable=invalid-name
