@@ -121,6 +121,9 @@ class Bot(Chain):
                 if user_input == "history" or user_input == "his":
                     self.log_history()
                     continue
+                if user_input == "show_prompt" or user_input == "sp":
+                    self.console.system_print(self.system_message.content)
+                    continue
                 response = self.run(user_input)
                 logger.info(response)
                 function_call = response.get("function_call", None)
@@ -133,6 +136,7 @@ class Bot(Chain):
 
     def handle_function_call(self, params):
         try:
+            logger.info(f"function_call triggered with params: {params}")
             name, args = parse_function_call(params)
             self.validate_arguments(name, args)
 
@@ -144,8 +148,8 @@ class Bot(Chain):
             if ismethod(callback):
                 callback(result)
         # pylint: disable=broad-except
-        except Exception as _:
-            traceback.print_exc()
+        except Exception:
+            logger.warning(traceback.format_exc())
 
     def print_and_save(self, msg):
         self.console.ai_print(msg)
@@ -153,6 +157,7 @@ class Bot(Chain):
 
     def validate_arguments(self, name, args):
         invalid_args = find_invalid_argument(name, args)
+        import ipdb; ipdb.set_trace(context=5)
         if invalid_args:
             args_desc = invalid_args["properties"]["description"]
             msg = f"Great, to apply the job you need to provide: {args_desc}"
@@ -169,7 +174,7 @@ class Bot(Chain):
 
     def apply_job_callback(self, job):
         logger.info(job)
-        self.print_and_save("job appled successfully!")
+        self.print_and_save(f"job={job} appled successfully!")
 
     def _call(
         self,
