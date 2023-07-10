@@ -18,7 +18,7 @@
 * setup lanchain tracing
 * support job applied history
 * support applied job status query
-* command line support command tips
-* command line support show history
+    * command line support command tips
+    * command line support show history
 * talk with @sihao about using real job search api
 * search job pagination
