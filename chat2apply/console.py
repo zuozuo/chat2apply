@@ -1,6 +1,8 @@
 from rich.console import Console
 
 AI_TEXT_COLOR = 'bright_magenta'
+USER_TEXT_COLOR = 'cyan'
+SYSTEM_TEXT_COLOR = 'blue'
 from .prompts import WELCOME_MESSAGE
 
 class BotConsole():
@@ -15,11 +17,15 @@ class BotConsole():
         self.console.print(f"\n   {text}")
 
     def user_print(self, text):
-        self.console.print(f"[b]You[/b]: ", end="", style=AI_TEXT_COLOR)
+        self.console.print(f"[b]You[/b]: ", end="", style=USER_TEXT_COLOR)
+        self.console.print(f"\n   {text}")
+
+    def system_print(self, text):
+        self.console.print(f"[b]System[/b]: ", end="", style=SYSTEM_TEXT_COLOR)
         self.console.print(f"\n   {text}")
 
     def get_user_input(self):
         return self.console.input("[b]You:[/b]\n   ").strip()
 
     def print_welcome_message(self):
-        self.ai_print(WELCOME_MESSAGE.format(self.name))
+        self.ai_print(WELCOME_MESSAGE.format(name=self.name))

@@ -26,6 +26,7 @@ from .console import BotConsole
 from .functions import parse_function_call, function_specs, find_invalid_argument
 from .chat_memory import ChatMemory
 from . import functions
+from .logger import logger
 
 
 class Bot(Chain):
@@ -85,7 +86,9 @@ class Bot(Chain):
         content = SYSTEM_PROMPT.format(
             bot_name=self.bot_name,
             company_name=self.company_name,
+            user_profile=self.user.as_json(),
         )
+        # logger.info(content)
         return SystemMessage(content=content)
 
     # pylint: disable=W0221
@@ -99,6 +102,12 @@ class Bot(Chain):
         self.history.add_user_message(message)
         return self(kwargs, callbacks=callbacks, tags=tags)
 
+    def log_history(self):
+        logger.info("log chat history: ")
+        for msg in self.history.messages:
+            logger.info(f"{msg.type}: {msg.content}")
+        self.console.system_print("log chat history to log file successfully!")
+
     def run_interactively(self):
         self.console.print_welcome_message()
         first_question = "Do you want to find a job?"
@@ -107,14 +116,13 @@ class Bot(Chain):
         while True:
             try:
                 user_input = self.console.get_user_input()
-
                 if user_input in ["quit", "q"]:
                     break
-                if user_input == "show_messages":
-                    print("show_messages")
+                if user_input == "history" or user_input == "his":
+                    self.log_history()
                     continue
                 response = self.run(user_input)
-                print(response)
+                logger.info(response)
                 function_call = response.get("function_call", None)
                 if function_call:
                     self.handle_function_call(function_call)
@@ -160,7 +168,7 @@ class Bot(Chain):
         )
 
     def apply_job_callback(self, job):
-        print(job)
+        logger.info(job)
         self.print_and_save("job appled successfully!")
 
     def _call(

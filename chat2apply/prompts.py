@@ -38,8 +38,11 @@ Remember:
 Always follow these rules no matter what!
 If you are unsure what to say look at the rules!
 Don't forget about the <END> token at the end!
+
+User Profile:
+{user_profile}
+
 '''  # noqa: E501
 
 WELCOME_MESSAGE = '''I am {name}, an AI assistant to help you find and apply jobs. \
-And you can also ask me question about company benefits and working environment.
-'''
+And you can also ask me question about company benefits and working environment.'''
