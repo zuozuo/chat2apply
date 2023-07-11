@@ -25,6 +25,9 @@ You can disable the debug log and error messages by setting logger to
 from chat2apply.bot import get_logger
 logger = get_logger('production')
 bot = Bot(company_name='KFC', bot_name='GeniusBot', logger=logger)
+bot.run('hello')
+# or 
+# this is only used for debugging locally
 bot.run_interactively()
 ```
 then all the debug log and error messages will be printed to a log file
@@ -61,3 +64,55 @@ class MysqlMemory(ChatMemory):
 ```
 
 ## How to implement a cunstom agent and add it to bot
+
+1. subclass `BaseAgent` which is defined in `chat2apply/agent/base.py`
+```python
+# this is a simple code example to implement a cunstom agent
+from .base import BaseAgent
+
+class MyCustomAgent(BaseAgent):
+    # for more infomation about function_specs please refer to the documentation:
+    # https://platform.openai.com/docs/api-reference/chat/create#chat/create-functions
+    @property
+    def function_specs(self):
+        return {
+            "name": "my_custom",
+            "description": "this is a custom agent",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "property1": {
+                        "type": "string",
+                        "description": "property1 description","
+                    },
+                    "property2": {
+                        "type": "string",
+                        "description": "property2 description","
+                    },
+                },
+                "required": ["property1"]
+            },
+        }
+
+    # put the business logic here
+    # args: { 'property1':'value1', 'property2':'value2'' }
+    def run(self, args):
+        return args
+
+    # this function only used in the interactively mode for debugging purposes
+    def callback(self, job, bot):
+        pass
+```
+
+2. init a bot instance and add your custom agent to the bot's agent list
+```python
+from chat2apply import Bot, User, ApplyJobAgent, SearchJobAgent, MyCustomAgent
+
+user = User(name="name", phone="phone number", email="email address")
+
+bot = Bot(user=user, bot_name="GeniusBot", company_name="company_name")
+bot.add_agent(ApplyJobAgent())
+bot.add_agent(SearchJobAgent())
+bot.add_agent(MyCustomAgent)
+bot.run('hello')
+```
