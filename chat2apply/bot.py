@@ -14,6 +14,7 @@ from langchain.callbacks.manager import (
     Callbacks,
 )
 
+
 from langchain.chains.base import Chain
 from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
