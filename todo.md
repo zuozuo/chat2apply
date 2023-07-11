@@ -1,8 +1,8 @@
 ## TODOs
 ### current_user profile
-    - add user profile to prompt [Done]
-    - remember user profile [Done]
-    - load from db and save to db
+- add user profile to prompt [Done]
+- remember user profile [Done]
+- load from db and save to db
 
 ### Others
     * create custom memory class to be extended and support database storage, with doc
