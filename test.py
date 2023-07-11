@@ -8,7 +8,7 @@ bot = Bot(user=user3, bot_name="GeniusBot", company_name="company_name")
 bot.add_agent(ApplyJobAgent())
 bot.add_agent(SearchJobAgent())
 print(bot.agents)
-bot.run_interactively()
+# bot.run_interactively()
 
 # message = " ".join(sys.argv[1:])
 # print(message)
