@@ -30,6 +30,6 @@ class ApplyJobAgent(BaseAgent):
         return args
 
     # this function only used in the interactively mode
-    def callback(self, jobs, bot):
+    def callback(self, job, bot):
         bot.logger.info(job)
         bot.print_and_save(f"job={job} appled successfully!")

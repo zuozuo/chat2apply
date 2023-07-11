@@ -1,8 +1,10 @@
+import os
 from serpapi import GoogleSearch
 
 from .base import BaseAgent
 
-GoogleSearch.SERP_API_KEY = os.getenv('SERPAPI_API_KEY')
+GoogleSearch.SERP_API_KEY = os.getenv("SERPAPI_API_KEY")
+
 
 class SearchJobAgent(BaseAgent):
     @property
@@ -31,15 +33,17 @@ class SearchJobAgent(BaseAgent):
         }
 
     def run(self, args):
-        search = GoogleSearch({
-            "num": 3,
-            "q": args.get('job_title'),
-            "location": args.get('location'),
-            "engine": "google_jobs",
-        })
+        search = GoogleSearch(
+            {
+                "num": 3,
+                "q": args.get("job_title"),
+                "location": args.get("location"),
+                "engine": "google_jobs",
+            }
+        )
         result = search.get_dict()
-        keys = ['title', 'company_name', 'location', 'description']
-        job_list = result['jobs_results'][0:3]
+        keys = ["title", "company_name", "location", "description"]
+        job_list = result["jobs_results"][0:3]
         jobs = []
         for job in job_list:
             job_info = {key: job[key] for key in keys}

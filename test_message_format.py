@@ -1,4 +1,3 @@
-import sys
 from chat2apply.bot import Bot
 
 messages = [

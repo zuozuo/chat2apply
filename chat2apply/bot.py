@@ -23,7 +23,6 @@ from langchain.schema import SystemMessage
 from .user import User
 from .prompts import SYSTEM_PROMPT
 from .console import BotConsole
-from .function import Function
 from .chat_memory import ChatMemory
 from .logger import get_logger
 from .agent import BaseAgent
@@ -38,9 +37,8 @@ class Bot(Chain):
     """Company name for which this chatbot works for"""
     bot_name: str = "GeniusBot"
     """Name of the bot"""
-    function: Function = Function()
     history: ChatMemory = ChatMemory()
-    logger: Logger = get_logger('dev')
+    logger: Logger = get_logger("dev")
     agents: Dict[str, BaseAgent] = {}
     prompt: ChatPromptTemplate = SystemMessagePromptTemplate(
         prompt=PromptTemplate(
@@ -167,15 +165,12 @@ class Bot(Chain):
 
     def find_invalid_argument(self, name, arguments):
         agent = self.agents[name]
-        func_properties = agent.func_specs["parameters"]["properties"]
+        func_properties = agent.function_specs["parameters"]["properties"]
         for key in arguments:
             value = arguments[key]
-            if self.is_argument_valid(value, func_properties[key]['type']):
+            if self.is_argument_valid(value, func_properties[key]["type"]):
                 continue
-            return {
-                'name': key,
-                'properties': func_properties[key]
-            }
+            return {"name": key, "properties": func_properties[key]}
         return {}
 
     def safe_parse_arguments(self, args_str):
@@ -185,21 +180,24 @@ class Bot(Chain):
             raise ValueError(f"invalid function_call arguments: {args_str}") from e
 
     def parse_function_call(self, params):
-        name = params.get('name') or ''
-        _args = params.get('arguments') or '{}'
+        name = params.get("name") or ""
+        _args = params.get("arguments") or "{}"
         args = self.safe_parse_arguments(_args)
         if self.agents[name]:
             return name, args
         raise ValueError(f"invalid function: name={name} params={params}")
 
     def is_argument_valid(self, value, value_type):
-        if value_type == 'string':
-            return value != "" and value != 'any' and value is not None
-        if value_type == 'integer':
+        if value_type == "string":
+            return value != "" and value != "any" and value is not None
+        if value_type == "integer":
             return value > 0
-        if value_type == 'boolean':
+        if value_type == "boolean":
             return True
         return False
+
+    def get_function_specs(self):
+        return [self.agents[name].function_specs for name in self.agents]
 
     def _call(
         self,
@@ -216,7 +214,7 @@ class Bot(Chain):
         response = self.llm.predict_messages(
             messages,
             callbacks=callbacks,
-            functions=self.function.specs,
+            functions=self.get_function_specs(),
         )
 
         # If you want to log something about this run, you can do so by calling
