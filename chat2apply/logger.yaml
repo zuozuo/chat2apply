@@ -8,6 +8,20 @@ handlers:
     filename: /tmp/chatbot.log
     level: DEBUG
     formatter: simple
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simple
+    stream: ext://sys.stdout
+loggers:
+  dev_logger:
+    level: DEBUG
+    handlers: [console, file_handler]
+    propagate: no
+  production_logger:
+    level: DEBUG
+    handlers: [console, file_handler]
+    propagate: no
 root:
   level: DEBUG
   handlers: [file_handler]

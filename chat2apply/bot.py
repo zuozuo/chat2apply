@@ -4,6 +4,7 @@ import traceback
 
 from typing import Any, Dict, List, Optional
 from inspect import ismethod
+from logging import Logger
 
 from pydantic import Extra
 
@@ -25,7 +26,7 @@ from .prompts import SYSTEM_PROMPT
 from .console import BotConsole
 from .function import Function
 from .chat_memory import ChatMemory
-from .logger import logger
+from .logger import get_logger
 
 
 class Bot(Chain):
@@ -43,6 +44,8 @@ class Bot(Chain):
     function: Function = Function()
 
     history: ChatMemory = ChatMemory()
+
+    logger: Logger = get_logger('dev')
 
     prompt: ChatPromptTemplate = SystemMessagePromptTemplate(
         prompt=PromptTemplate(
@@ -104,9 +107,9 @@ class Bot(Chain):
         return self(kwargs, callbacks=callbacks, tags=tags)
 
     def log_history(self):
-        logger.info("log chat history: ")
+        self.logger.info("log chat history: ")
         for msg in self.history.messages:
-            logger.info(f"{msg.type}: {msg.content}")
+            self.logger.info(f"{msg.type}: {msg.content}")
         self.console.system_print("log chat history to log file successfully!")
 
     def run_interactively(self):
@@ -126,7 +129,7 @@ class Bot(Chain):
                     self.console.system_print(self.system_message.content)
                     continue
                 response = self.run(user_input)
-                logger.info(response)
+                self.logger.info(response)
                 function_call = response.get("function_call", None)
                 if function_call:
                     self.handle_function_call(function_call)
@@ -137,7 +140,7 @@ class Bot(Chain):
 
     def handle_function_call(self, params):
         try:
-            logger.info(f"function_call triggered with params: {params}")
+            self.logger.info(f"function_call triggered with params: {params}")
             name, args = self.function.parse_function_call(params)
             self.validate_arguments(name, args)
 
@@ -150,7 +153,7 @@ class Bot(Chain):
                 callback(result)
         # pylint: disable=broad-except
         except Exception:
-            logger.warning(traceback.format_exc())
+            self.logger.warning(traceback.format_exc())
 
     def print_and_save(self, msg):
         self.console.ai_print(msg)
@@ -174,7 +177,7 @@ class Bot(Chain):
         )
 
     def apply_job_callback(self, job):
-        logger.info(job)
+        self.logger.info(job)
         self.print_and_save(f"job={job} appled successfully!")
 
     def _call(

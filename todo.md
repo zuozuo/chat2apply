@@ -4,10 +4,6 @@
 * remember user profile [Done]
 * load from db and save to db
 
-### Others
-* create custom memory class to be extended and support database storage, with doc
-* create custom function class to be extended and support custom function, with doc
-
 ### Applied job agent
 * support job applied history
     * current applied job list
@@ -35,3 +31,9 @@
     * use chatgpt for test case assetion
 * collec useful test cases and former bugs
 * setup lanchain tracing
+
+### Support multiple agents and enable user to add custom agents
+    * create custom function class to be extended and support custom function, with doc
+
+### Others
+* create custom memory class to be extended and support database storage, with doc
