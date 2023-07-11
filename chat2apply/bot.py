@@ -23,9 +23,8 @@ from langchain.schema import SystemMessage
 from .user import User
 from .prompts import SYSTEM_PROMPT
 from .console import BotConsole
-from .functions import parse_function_call, function_specs, find_invalid_argument
+from .function import Function
 from .chat_memory import ChatMemory
-from . import functions
 from .logger import logger
 
 
@@ -40,6 +39,8 @@ class Bot(Chain):
 
     bot_name: str = "GeniusBot"
     """Name of the bot"""
+
+    function: Function = Function()
 
     history: ChatMemory = ChatMemory()
 
@@ -137,13 +138,13 @@ class Bot(Chain):
     def handle_function_call(self, params):
         try:
             logger.info(f"function_call triggered with params: {params}")
-            name, args = parse_function_call(params)
+            name, args = self.function.parse_function_call(params)
             self.validate_arguments(name, args)
 
             # TODO: update_job_preference(args)
 
             # call function with arguments and return
-            result = getattr(functions, name)(args)
+            result = getattr(self.function, name)(args)
             callback = getattr(self, f"{name}_callback")
             if ismethod(callback):
                 callback(result)
@@ -156,7 +157,7 @@ class Bot(Chain):
         self.history.add_ai_message(msg)
 
     def validate_arguments(self, name, args):
-        invalid_args = find_invalid_argument(name, args)
+        invalid_args = self.function.find_invalid_argument(name, args)
         import ipdb; ipdb.set_trace(context=5)
         if invalid_args:
             args_desc = invalid_args["properties"]["description"]
@@ -191,7 +192,7 @@ class Bot(Chain):
         response = self.llm.predict_messages(
             messages,
             callbacks=callbacks,
-            functions=function_specs,
+            functions=self.function.specs,
         )
 
         # If you want to log something about this run, you can do so by calling
