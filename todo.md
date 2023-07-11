@@ -1,24 +1,35 @@
-## features to support
+## TODOs
+### current_user profile
+    * add user profile to prompt [Done]
+    * remember user profile [Done]
+    * load from db and save to db
+### Applied job history
+    * current applied job list
+        * remember job applied
+        * load from db and save to db
+    * support applied job status query
+        * command line support command tips
+        * command line support show history
+    * support job applied history
 
-* current_user profile, load from db and save to db
-* current_job_list
-* current applied jobs
-* available job title list
-* no jobs at some city, relocation to another city
-* no jobs at some job type, relocation to another job type
-* create custom memory class to be extended and support database storage, with doc
-* create custom function class to be extended and support custom function, with doc
-* design a test framework to test the chat and apply workflow
-    * use chatgpt for test case assetion
-* collec useful test cases and former bugs
-* support custom prompt template
-    * add user profile to prompt
-* support qa about jobs
-* qa about company
-* setup lanchain tracing
-* support job applied history
-* support applied job status query
-    * command line support command tips
-    * command line support show history
-* talk with @sihao about using real job search api
-* search job pagination
+### Others
+    * create custom memory class to be extended and support database storage, with doc
+    * create custom function class to be extended and support custom function, with doc
+
+### Search job agent
+    * talk with @sihao about using real job search api parameters
+    * search job pagination
+    * compare jobs
+    * available job title list and location list
+        * no jobs at some city, relocation to another city
+        * no jobs at some job type, relocation to another job type
+
+### Company info QA agent
+    * support qa about jobs
+    * qa about company
+
+### Test and Monitor
+    * design a test framework to test the chat and apply workflow
+        * use chatgpt for test case assetion
+    * collec useful test cases and former bugs
+    * setup lanchain tracing
